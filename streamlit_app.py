@@ -1,7 +1,7 @@
 import os
 import streamlit as st
 
-from src.config import OLLAMA_MODEL, CHROMA_PERSIST_DIR, DOCS_PATH, TOP_K
+from src.config import GROQ_MODEL, CHROMA_PERSIST_DIR, DOCS_PATH, TOP_K
 from src.pdf_loader import load_documents
 from src.chunker import split_documents_into_chunks
 from src.vector_store import build_vector_store
@@ -153,7 +153,7 @@ h1, h2, h3, h4, h5, h6, p, label, div, span {
     margin-bottom: 0.5rem;
 }
 
-/* ---------- TEXT AREA (IMPORTANT FIX) ---------- */
+/* ---------- TEXT AREA ---------- */
 [data-testid="stTextArea"] textarea {
     background: rgba(15, 23, 42, 0.95) !important;
     color: #f8fafc !important;
@@ -261,7 +261,7 @@ with st.sidebar:
 
     st.markdown("---")
 
-    st.markdown(f"**Model**  \n`{OLLAMA_MODEL}`")
+    st.markdown(f"**Model**  \n`{GROQ_MODEL}`")
     st.markdown(f"**Docs Path**  \n`{DOCS_PATH}`")
     st.markdown(f"**Vector Store**  \n`{CHROMA_PERSIST_DIR}`")
     st.markdown(f"**Top-K Retrieval**  \n`{TOP_K}`")
@@ -278,7 +278,7 @@ with st.sidebar:
     mode_choice = st.radio(
         "Choose behavior:",
         options=[
-            "Hybrid Mode (RAG + General LLM Fallback)",
+            "Hybrid Mode (RAG + Gemini Fallback)",
             "Strict RAG Only"
         ],
         index=0
@@ -292,7 +292,7 @@ with st.sidebar:
         max_value=1.50,
         value=1.10,
         step=0.05,
-        help="Lower score = better retrieval. If the best score is above this threshold, Hybrid Mode uses general LLM fallback."
+        help="Lower score = better retrieval. If the best score is above this threshold, Hybrid Mode uses Gemini fallback."
     )
 
     st.markdown("---")
@@ -310,7 +310,7 @@ with st.sidebar:
             st.error(f"Build failed: {str(e)}")
 
     st.markdown("---")
-    st.caption("Hybrid local AI assistant • Retrieval + Ollama")
+    st.caption("Hybrid RAG Assistant • Retrieval + Google Gemini")
 
 
 # =========================================================
@@ -320,15 +320,15 @@ st.markdown("""
 <div class="hero-card">
     <div class="hero-title">Hybrid RAG Assistant</div>
     <div class="hero-subtitle">
-        Ask questions grounded in your internal documents, or let the assistant intelligently fall back to local general LLM knowledge when retrieval confidence is weak.
+        Ask questions grounded in your internal documents, or let the assistant intelligently fall back to general Gemini knowledge when retrieval confidence is weak.
         Built for a premium, modern AI product experience.
     </div>
     <div class="pill-row">
-        <div class="pill">Local Ollama</div>
+        <div class="pill">Google Gemini</div>
         <div class="pill">Chroma Retrieval</div>
         <div class="pill">Hybrid Fallback</div>
         <div class="pill">Source-Aware</div>
-        <div class="pill">Fully Local</div>
+        <div class="pill">Deployment Ready</div>
     </div>
 </div>
 """, unsafe_allow_html=True)
@@ -340,7 +340,7 @@ st.markdown("""
 if strict_mode:
     st.warning("Strict RAG Mode is active — answers will only come from your uploaded knowledge base.")
 else:
-    st.success("Hybrid Mode is active — document retrieval first, then local general LLM fallback if needed.")
+    st.success("Hybrid Mode is active — document retrieval first, then Gemini fallback if needed.")
 
 
 # =========================================================
@@ -423,11 +423,11 @@ if ask_clicked:
             if retrieval_status == "relevant_context_found":
                 st.info("Relevant document context was found, so the answer was generated using retrieval-augmented generation.")
             elif retrieval_status == "weak_retrieval" and result.get("used_fallback", False):
-                st.warning("Document retrieval was weak, so Hybrid Mode used the local Ollama fallback.")
+                st.warning("Document retrieval was weak, so Hybrid Mode used the Gemini fallback.")
             elif retrieval_status == "weak_retrieval":
                 st.warning("Document retrieval was weak, and Strict RAG mode refused to answer outside the knowledge base.")
             elif retrieval_status == "no_results" and result.get("used_fallback", False):
-                st.warning("No relevant document results were found, so Hybrid Mode used the local Ollama fallback.")
+                st.warning("No relevant document results were found, so Hybrid Mode used the Gemini fallback.")
             else:
                 st.warning("No strong document context was found.")
 
@@ -463,4 +463,4 @@ if ask_clicked:
 # FOOTER
 # =========================================================
 st.markdown("<br>", unsafe_allow_html=True)
-st.caption("Hybrid Local RAG Assistant • Premium Dark UI • Streamlit + Chroma + Ollama")
+st.caption("Hybrid RAG Assistant • Premium Dark UI • Streamlit + Chroma + Gemini")
