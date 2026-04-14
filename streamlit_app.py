@@ -1,7 +1,6 @@
-import os
 import streamlit as st
 
-from src.config import GROQ_MODEL, CHROMA_PERSIST_DIR, DOCS_PATH, TOP_K
+from src.config import GROQ_MODEL, DOCS_PATH, TOP_K
 from src.pdf_loader import load_documents
 from src.chunker import split_documents_into_chunks
 from src.vector_store import build_vector_store
@@ -16,6 +15,13 @@ st.set_page_config(
     page_icon="✨",
     layout="wide"
 )
+
+
+# =========================================================
+# SESSION STATE INIT
+# =========================================================
+if "vector_store" not in st.session_state:
+    st.session_state.vector_store = None
 
 
 # =========================================================
@@ -100,17 +106,6 @@ h1, h2, h3, h4, h5, h6, p, label, div, span {
 }
 
 /* ---------- CARDS ---------- */
-.glass-card {
-    background: rgba(15, 23, 42, 0.76);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(148, 163, 184, 0.12);
-    border-radius: 24px;
-    padding: 22px;
-    box-shadow: 0 14px 36px rgba(0, 0, 0, 0.22);
-    margin-bottom: 1rem;
-}
-
 .answer-card {
     background: linear-gradient(180deg, rgba(15, 23, 42, 0.92) 0%, rgba(17, 24, 39, 0.92) 100%);
     border: 1px solid rgba(59, 130, 246, 0.22);
@@ -223,11 +218,6 @@ pre {
     border-radius: 14px !important;
     border: 1px solid rgba(148, 163, 184, 0.10) !important;
 }
-
-/* ---------- HR ---------- */
-hr {
-    border-color: rgba(148, 163, 184, 0.12);
-}
 </style>
 """, unsafe_allow_html=True)
 
@@ -236,7 +226,7 @@ hr {
 # HELPERS
 # =========================================================
 def is_vector_db_ready():
-    return "vector_store" in st.session_state and st.session_state.vector_store is not None
+    return st.session_state.vector_store is not None
 
 
 def rebuild_knowledge_base():
@@ -253,6 +243,7 @@ def rebuild_knowledge_base():
         "vectors_stored": len(chunks)
     }
 
+
 # =========================================================
 # SIDEBAR
 # =========================================================
@@ -264,7 +255,6 @@ with st.sidebar:
 
     st.markdown(f"**Model**  \n`{GROQ_MODEL}`")
     st.markdown(f"**Docs Path**  \n`{DOCS_PATH}`")
-    st.markdown(f"**Vector Store**  \n`{CHROMA_PERSIST_DIR}`")
     st.markdown(f"**Top-K Retrieval**  \n`{TOP_K}`")
 
     st.markdown("---")
@@ -422,6 +412,7 @@ if ask_clicked:
             with st.spinner("Retrieving context and generating answer..."):
                 result = ask_rag(
                     query=query.strip(),
+                    vector_store=st.session_state.get("vector_store"),
                     strict_mode=strict_mode,
                     score_threshold=score_threshold
                 )
