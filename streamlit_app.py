@@ -236,21 +236,22 @@ hr {
 # HELPERS
 # =========================================================
 def is_vector_db_ready():
-    return os.path.exists(CHROMA_PERSIST_DIR) and len(os.listdir(CHROMA_PERSIST_DIR)) > 0
+    return "vector_store" in st.session_state and st.session_state.vector_store is not None
 
 
 def rebuild_knowledge_base():
     docs = load_documents()
     chunks = split_documents_into_chunks(docs)
     vector_store = build_vector_store(chunks, reset_db=True)
-    count = vector_store._collection.count()
+
+    # Store in Streamlit session (RAM)
+    st.session_state.vector_store = vector_store
 
     return {
         "total_documents_loaded": len(docs),
         "total_chunks_created": len(chunks),
-        "vectors_stored": count
+        "vectors_stored": len(chunks)
     }
-
 
 # =========================================================
 # SIDEBAR

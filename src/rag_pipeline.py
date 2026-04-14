@@ -1,4 +1,3 @@
-from src.vector_store import load_vector_store
 from src.llm import generate_response
 from src.config import TOP_K
 
@@ -54,7 +53,7 @@ If relevant retrieved document context is available, prioritize it.
 If retrieved context is weak or unavailable, answer using general knowledge.
 
 If the user asks something personal like "what is your name", say:
-"I am a Hybrid RAG Assistant powered by document retrieval and Google Gemini."
+"I am a Hybrid RAG Assistant powered by document retrieval and Groq."
 
 User Question:
 {query}
@@ -63,9 +62,9 @@ Answer:
 """.strip()
 
 
-def ask_rag(query: str, strict_mode: bool = False, score_threshold: float = 1.10):
+def ask_rag(query: str, vector_store, strict_mode: bool = False, score_threshold: float = 1.10):
     """
-    Hybrid RAG pipeline.
+    Hybrid RAG pipeline using an in-memory vector store.
 
     strict_mode=True:
         - only answer from retrieved documents
@@ -74,13 +73,9 @@ def ask_rag(query: str, strict_mode: bool = False, score_threshold: float = 1.10
     strict_mode=False:
         - try RAG first
         - if retrieval is weak, fallback to general LLM answer
-
-    score_threshold:
-        lower distance score = better match
-        if best score <= threshold => good retrieval
-        if best score > threshold => weak retrieval
     """
-    vector_store = load_vector_store()
+    if vector_store is None:
+        raise RuntimeError("Knowledge base is not built yet. Please build it first.")
 
     # Retrieve with scores
     results = vector_store.similarity_search_with_score(query, k=TOP_K)
