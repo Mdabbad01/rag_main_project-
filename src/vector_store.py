@@ -10,8 +10,17 @@ def build_vector_store(chunks, reset_db=True):
     Build and persist a Chroma vector store from chunks.
     If reset_db=True, it deletes the old DB and rebuilds it fresh.
     """
-    if reset_db and os.path.exists(CHROMA_PERSIST_DIR):
-        shutil.rmtree(CHROMA_PERSIST_DIR)
+
+    # Hugging Face / cloud-safe reset
+    if reset_db:
+        try:
+            if os.path.exists(CHROMA_PERSIST_DIR):
+                shutil.rmtree(CHROMA_PERSIST_DIR, ignore_errors=True)
+        except Exception:
+            pass
+
+    # Always recreate the directory explicitly
+    os.makedirs(CHROMA_PERSIST_DIR, exist_ok=True)
 
     embedding_function = get_embedding_function()
 
@@ -29,6 +38,9 @@ def load_vector_store():
     Load an existing persisted Chroma vector store.
     """
     embedding_function = get_embedding_function()
+
+    # Make sure directory exists
+    os.makedirs(CHROMA_PERSIST_DIR, exist_ok=True)
 
     vector_store = Chroma(
         persist_directory=CHROMA_PERSIST_DIR,
