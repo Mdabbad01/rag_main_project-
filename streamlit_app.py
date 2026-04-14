@@ -278,7 +278,7 @@ with st.sidebar:
     mode_choice = st.radio(
         "Choose behavior:",
         options=[
-            "Hybrid Mode (RAG + Gemini Fallback)",
+            "Hybrid Mode (RAG + General LLM Fallback)",
             "Strict RAG Only"
         ],
         index=0
@@ -292,7 +292,7 @@ with st.sidebar:
         max_value=1.50,
         value=1.10,
         step=0.05,
-        help="Lower score = better retrieval. If the best score is above this threshold, Hybrid Mode uses Gemini fallback."
+        help="Lower score = better retrieval. If the best score is above this threshold, Hybrid Mode uses fallback."
     )
 
     st.markdown("---")
@@ -310,7 +310,7 @@ with st.sidebar:
             st.error(f"Build failed: {str(e)}")
 
     st.markdown("---")
-    st.caption("Hybrid RAG Assistant • Retrieval + Google Gemini")
+    st.caption("Hybrid RAG Assistant • Retrieval + Groq")
 
 
 # =========================================================
@@ -320,11 +320,11 @@ st.markdown("""
 <div class="hero-card">
     <div class="hero-title">Hybrid RAG Assistant</div>
     <div class="hero-subtitle">
-        Ask questions grounded in your internal documents, or let the assistant intelligently fall back to general Gemini knowledge when retrieval confidence is weak.
+        Ask questions grounded in your internal documents, or let the assistant intelligently fall back to general LLM knowledge when retrieval confidence is weak.
         Built for a premium, modern AI product experience.
     </div>
     <div class="pill-row">
-        <div class="pill">Google Gemini</div>
+        <div class="pill">Groq LLM</div>
         <div class="pill">Chroma Retrieval</div>
         <div class="pill">Hybrid Fallback</div>
         <div class="pill">Source-Aware</div>
@@ -338,9 +338,44 @@ st.markdown("""
 # MODE BANNER
 # =========================================================
 if strict_mode:
-    st.warning("Strict RAG Mode is active — answers will only come from your uploaded knowledge base.")
+    st.warning("Strict RAG Mode is active — answers will only come from your document knowledge base.")
 else:
-    st.success("Hybrid Mode is active — document retrieval first, then Gemini fallback if needed.")
+    st.success("Hybrid Mode is active — document retrieval first, then general LLM fallback if needed.")
+
+
+# =========================================================
+# MAIN PAGE KNOWLEDGE BASE SETUP
+# =========================================================
+st.markdown('<div class="mini-label">Knowledge base setup</div>', unsafe_allow_html=True)
+
+kb_col1, kb_col2 = st.columns([1.8, 4])
+
+with kb_col1:
+    build_main_clicked = st.button("🔨 Build / Rebuild Knowledge Base", use_container_width=True)
+
+with kb_col2:
+    if is_vector_db_ready():
+        st.success("Knowledge base detected and ready.")
+    else:
+        st.warning("Knowledge base is not ready yet. Click the build button once before asking questions.")
+
+if build_main_clicked:
+    try:
+        with st.spinner("Building knowledge base... Please wait..."):
+            stats = rebuild_knowledge_base()
+
+        st.success(
+            f"✅ Knowledge base built successfully! "
+            f"Loaded {stats['total_documents_loaded']} docs, "
+            f"created {stats['total_chunks_created']} chunks, "
+            f"stored {stats['vectors_stored']} vectors."
+        )
+        st.rerun()
+
+    except Exception as e:
+        st.error(f"❌ Failed to build knowledge base: {str(e)}")
+
+st.markdown("<br>", unsafe_allow_html=True)
 
 
 # =========================================================
@@ -380,7 +415,7 @@ if ask_clicked:
     if not query.strip():
         st.warning("Please enter a question first.")
     elif not is_vector_db_ready():
-        st.warning("Knowledge base is not ready yet. Please build it from the sidebar first.")
+        st.warning("Knowledge base is not ready yet. Please click the Build / Rebuild Knowledge Base button above.")
     else:
         try:
             with st.spinner("Retrieving context and generating answer..."):
@@ -423,11 +458,11 @@ if ask_clicked:
             if retrieval_status == "relevant_context_found":
                 st.info("Relevant document context was found, so the answer was generated using retrieval-augmented generation.")
             elif retrieval_status == "weak_retrieval" and result.get("used_fallback", False):
-                st.warning("Document retrieval was weak, so Hybrid Mode used the Gemini fallback.")
+                st.warning("Document retrieval was weak, so Hybrid Mode used the general LLM fallback.")
             elif retrieval_status == "weak_retrieval":
                 st.warning("Document retrieval was weak, and Strict RAG mode refused to answer outside the knowledge base.")
             elif retrieval_status == "no_results" and result.get("used_fallback", False):
-                st.warning("No relevant document results were found, so Hybrid Mode used the Gemini fallback.")
+                st.warning("No relevant document results were found, so Hybrid Mode used the general LLM fallback.")
             else:
                 st.warning("No strong document context was found.")
 
@@ -463,4 +498,4 @@ if ask_clicked:
 # FOOTER
 # =========================================================
 st.markdown("<br>", unsafe_allow_html=True)
-st.caption("Hybrid RAG Assistant • Premium Dark UI • Streamlit + Chroma + Gemini")
+st.caption("Hybrid RAG Assistant • Premium Dark UI • Streamlit + Chroma + Groq")
