@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-CHROMA_PERSIST_DIR = os.getenv("CHROMA_PERSIST_DIR", "chroma_db")
+CHROMA_PERSIST_DIR = os.getenv("CHROMA_PERSIST_DIR", "/tmp/chroma_db")
 DOCS_PATH = os.getenv("DOCS_PATH", "data/docs")
 TOP_K = int(os.getenv("TOP_K", 4))
 
