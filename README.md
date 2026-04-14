@@ -1,75 +1,55 @@
 
 ---
-
-
-# Hybrid RAG Assistant
-
-> A portfolio-ready **Hybrid Retrieval-Augmented Generation (RAG) Assistant** built with **Streamlit**, **FastAPI**, **ChromaDB**, **Sentence Transformers**, and a **pluggable LLM backend**.
-
-This project supports two intelligent response modes:
-
-- **Strict RAG Mode** → answers only from retrieved document context
-- **Hybrid Mode** → uses document retrieval first, then falls back to general LLM knowledge when retrieval is weak
-
-It is designed to demonstrate practical **GenAI engineering** concepts such as:
-
-- document ingestion
-- chunking
-- embeddings
-- vector search
-- grounded answer generation
-- retrieval confidence handling
-- hybrid fallback logic
-- local-to-cloud LLM migration
-
+title: Enterprise Policy RAG Assistant
+emoji: 🤖
+colorFrom: blue
+colorTo: purple
+sdk: docker
+pinned: false
 ---
 
-## ✨ Features
+# Enterprise Policy RAG Assistant
 
-- Load `.txt` and `.pdf` documents from a local knowledge base
-- Split documents into semantic chunks
-- Generate embeddings using **Sentence Transformers**
-- Store vectors in **ChromaDB**
-- Retrieve top-k relevant chunks for a user query
-- **Strict RAG Mode** for document-grounded answers only
-- **Hybrid Mode** for RAG + general LLM fallback
-- Interactive **Streamlit UI**
-- Optional **FastAPI backend**
-- Swappable LLM backend:
-  - **Ollama** for local development
-  - **Google Gemini API** for deployment-ready usage
+A portfolio-ready **Hybrid RAG (Retrieval-Augmented Generation)** project built with:
 
----
+- **Streamlit** for the UI
+- **FastAPI** for backend API endpoints
+- **ChromaDB** as the vector database
+- **Sentence Transformers** for embeddings
+- **Groq API** for LLM inference
+- **Docker** for deployment on Hugging Face Spaces
 
-## 🧠 Core Idea
+## Features
 
-Most beginner RAG projects stop at:
+- Upload-free local knowledge base from `data/docs`
+- Chunking + embedding + vector storage pipeline
+- Hybrid retrieval mode:
+  - **RAG Mode** for grounded document answers
+  - **Fallback LLM Mode** for general questions
+- Source chunk tracing
+- Clean Streamlit UI
+- Deployable on Hugging Face Spaces
 
-**Load documents → embed → retrieve → ask LLM**
+## Project Structure
 
-This project goes one step further by adding:
-
-- **retrieval score awareness**
-- **strict vs hybrid response modes**
-- **source transparency**
-- **modular LLM backend design**
-
-This makes it closer to how **real-world AI assistants** are designed.
-
----
-
-## 🏗️ Architecture
-
-```text
-User Query
-   ↓
-Vector Retrieval (ChromaDB)
-   ↓
-Top-K Relevant Chunks
-   ↓
-Relevance Score Check
-   ├── Strong retrieval  → Document-grounded RAG answer
-   └── Weak retrieval    → Hybrid fallback to general LLM
----
-
-
+```bash
+.
+├── app.py                 # FastAPI backend
+├── streamlit_app.py       # Streamlit frontend
+├── Dockerfile             # Hugging Face Docker deployment
+├── requirements.txt
+├── README.md
+├── data/
+│   └── docs/
+│       ├── employee_handbook.txt
+│       ├── faq.txt
+│       └── leave_policy.txt
+└── src/
+    ├── config.py
+    ├── pdf_loader.py
+    ├── chunker.py
+    ├── embeddings.py
+    ├── vector_store.py
+    ├── retriever.py
+    ├── llm.py
+    └── rag_pipeline.py
